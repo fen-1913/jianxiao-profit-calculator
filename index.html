@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="免费的国内小卖家利润计算器：计算订单利润、保本售价和目标利润售价，支持 Excel/WPS 商家日常定价参考。纯前端、无需登录、不上传数据。" />
+  <meta name="color-scheme" content="light" />
+  <title>简效利润计算器 · 免费网页版</title>
+  <style>
+    :root { color-scheme: light; --ink: #192537; --muted: #64748b; --border: #e3e9f0; --bg: #f4f7fa; --blue: #2364dd; --navy: #172a47; --green: #137950; --red: #c53030; --gold: #f7b955; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; line-height: 1.55; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    header { background: var(--navy); color: white; }
+    .wrap { width: min(1100px, calc(100% - 36px)); margin-inline: auto; }
+    .header-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 16px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 730; letter-spacing: .2px; }
+    .logo { width: 34px; height: 34px; display: grid; place-items: center; color: #132b49; background: var(--gold); border-radius: 11px; font-size: 18px; }
+    .header-tag { font-size: 12px; color: #d8e9ff; border: 1px solid #5d7390; border-radius: 999px; padding: 6px 12px; }
+    .intro { padding-block: 42px 30px; }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { font-size: clamp(29px, 4.3vw, 44px); line-height: 1.25; margin: 10px 0 13px; letter-spacing: -1px; }
+    .lead { font-size: 15px; color: #526176; max-width: 760px; margin: 0; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .pill { padding: 6px 10px; border-radius: 999px; color: #28527c; border: 1px solid #d6e2ef; background: #fff; font-size: 12px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.13fr) minmax(330px, .87fr); gap: 20px; align-items: start; margin-bottom: 34px; }
+    .panel { border-radius: 18px; border: 1px solid var(--border); background: white; box-shadow: 0 5px 24px rgba(20, 36, 65, .035); overflow: hidden; }
+    .panel-body { padding: 24px; }
+    .panel-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 0 0 16px; }
+    h2 { font-size: 18px; margin: 0; }
+    h3 { font-size: 14px; margin: 0; }
+    .hint { font-size: 12px; color: var(--muted); margin: 0; }
+    .section { padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--border); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 15px; row-gap: 15px; }
+    .field { display: block; min-width: 0; }
+    .field-label { display: block; font-size: 13px; font-weight: 640; margin-bottom: 6px; }
+    .field-hint { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+    .input-row { display: flex; overflow: hidden; align-items: center; border: 1px solid #cdd7e3; border-radius: 10px; background: white; transition: border-color .15s, box-shadow .15s; }
+    .input-row:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(35, 100, 221, .1); }
+    .input-row input { width: 100%; min-width: 0; padding: 11px 10px; border: 0; outline: none; background: transparent; color: var(--ink); font-size: 15px; font-variant-numeric: tabular-nums; }
+    .input-row .unit { flex: none; color: var(--muted); font-size: 13px; background: #f8fafc; border-left: 1px solid var(--border); padding: 11px 12px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .btn { border-radius: 10px; padding: 11px 15px; border: 1px solid #cdd7e3; font-weight: 650; font-size: 13px; background: white; color: var(--ink); }
+    .btn:focus-visible, a:focus-visible { outline: 3px solid #a8c6ff; outline-offset: 2px; }
+    .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn:hover { filter: brightness(.975); }
+    .results { position: sticky; top: 15px; }
+    .results .top { padding: 24px; color: white; background: linear-gradient(137deg, #20395b, #142844); }
+    .results .top .sub { color: #b9cde2; font-size: 13px; }
+    .value-main { font-size: clamp(34px, 4vw, 44px); letter-spacing: -1px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; margin-top: 9px; }
+    .value-main.negative { color: #ffc8c8; }
+    .value-main.positive { color: #baf9dc; }
+    .status { display: inline-block; font-size: 12px; border: 1px solid #607b99; padding: 4px 9px; border-radius: 999px; margin-top: 13px; }
+    .results .rest { padding: 23px; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .metric { border: 1px solid var(--border); background: #fbfcfe; border-radius: 12px; padding: 14px; }
+    .metric-name { color: var(--muted); font-size: 12px; }
+    .metric-value { font-size: 20px; font-weight: 750; font-variant-numeric: tabular-nums; margin-top: 5px; overflow-wrap: anywhere; }
+    .caption { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .breakdown { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 20px; }
+    .breakdown table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    .breakdown td { padding: 8px 0; border-bottom: 1px solid #eef1f5; }
+    .breakdown td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+    .breakdown tr:last-child td { border-bottom: 0; font-weight: 740; }
+    .error { border: 1px solid #ffbcc0; color: #921e24; background: #fff0f0; border-radius: 9px; padding: 10px 12px; margin: 0 0 16px; font-size: 12px; }
+    [hidden] { display: none !important; }
+    .note { background: #f0f5fc; border: 1px solid #dbe6f7; padding: 13px; border-radius: 11px; color: #425976; font-size: 12px; margin-top: 15px; }
+    .bottom { padding: 22px 24px; border-top: 1px solid var(--border); background: #fbfcfe; }
+    .bottom p { margin: 7px 0 0; font-size: 13px; color: #5f7084; }
+    footer { color: var(--muted); padding-bottom: 35px; font-size: 12px; }
+    footer a { color: #3b6087; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .results { position: static; } .intro { padding-top: 31px; } }
+    @media (max-width: 450px) { .wrap { width: min(100% - 24px, 1100px); } .panel-body, .results .rest { padding: 18px; } .form-grid { gap: 12px; } .metric { padding: 11px; } .metric-value { font-size: 18px; } .header-tag { display: none; } .intro { padding-top: 25px; } }
+  </style>
+</head>
+<body>
+  <header><div class="wrap header-inner"><div class="brand"><span class="logo" aria-hidden="true">算</span>简效工具实验室</div><span class="header-tag">免费工具 · 本地运算</span></div></header>
+  <main class="wrap">
+    <section class="intro">
+      <div class="eyebrow">Free tool / Profit calculator</div>
+      <h1>每卖一单，究竟赚多少钱？</h1>
+      <p class="lead">输入标价、商品成本、运费和手续费，立即算出实收金额、单笔净利润、保本标价和目标利润所需标价。适合网店、个人卖家做初步定价测算。</p>
+      <div class="pills"><span class="pill">✓ 免费使用</span><span class="pill">✓ 无需注册</span><span class="pill">✓ 手机可用</span><span class="pill">✓ 无需联网即可运行</span><span class="pill">✓ 不上传输入数据</span></div>
+    </section>
+    <div class="layout">
+      <section class="panel" aria-label="输入订单信息">
+        <div class="panel-body">
+          <div class="panel-title"><h2>订单参数</h2><p class="hint">示例数值仅供演示，非平台实际费率</p></div>
+          <div class="form-grid">
+            <label class="field"><span class="field-label">商品标价</span><span class="input-row"><input id="price" type="number" inputmode="decimal" min="0" step="0.01" value="39.9" /><span class="unit">元</span></span></label>
+            <label class="field"><span class="field-label">促销折扣</span><span class="input-row"><input id="discount" type="number" inputmode="decimal" min="0" max="99.99" step="0.1" value="10" /><span class="unit">%</span></span><span class="field-hint">例如 9 折填 10（优惠 10%）</span></label>
+          </div>
+          <div class="section"><div class="panel-title"><h3>每笔固定成本</h3><p class="hint">实际由卖家承担的部分</p></div>
+            <div class="form-grid">
+              <label class="field"><span class="field-label">采购 / 制作成本</span><span class="input-row"><input id="productCost" type="number" min="0" step="0.01" value="12" /><span class="unit">元</span></span></label>
+              <label class="field"><span class="field-label">卖家承担的运费</span><span class="input-row"><input id="shipping" type="number" min="0" step="0.01" value="4" /><span class="unit">元</span></span></label>
+              <label class="field"><span class="field-label">包装成本</span><span class="input-row"><input id="packaging" type="number" min="0" step="0.01" value="0.8" /><span class="unit">元</span></span></label>
+              <label class="field"><span class="field-label">单笔营销 / 其他成本</span><span class="input-row"><input id="otherCost" type="number" min="0" step="0.01" value="2" /><span class="unit">元</span></span></label>
+            </div>
+          </div>
+          <div class="section"><div class="panel-title"><h3>按实收金额计的费用</h3><p class="hint">按实际规则填写，避免重复计算</p></div>
+            <div class="form-grid">
+              <label class="field"><span class="field-label">平台费率</span><span class="input-row"><input id="platformRate" type="number" min="0" max="100" step="0.01" value="5" /><span class="unit">%</span></span></label>
+              <label class="field"><span class="field-label">支付 / 服务费率</span><span class="input-row"><input id="paymentRate" type="number" min="0" max="100" step="0.01" value="0.6" /><span class="unit">%</span></span></label>
+              <label class="field"><span class="field-label">售后损耗预留比例</span><span class="input-row"><input id="riskRate" type="number" min="0" max="100" step="0.01" value="2" /><span class="unit">%</span></span><span class="field-hint">仅为估算缓冲，非退款率自动计算</span></label>
+              <label class="field"><span class="field-label">目标单笔净利润</span><span class="input-row"><input id="targetProfit" type="number" min="0" step="0.01" value="10" /><span class="unit">元</span></span></label>
+            </div>
+          </div>
+          <div class="actions"><button id="exampleBtn" class="btn" type="button">恢复示例</button><button id="clearBtn" class="btn" type="button">全部归零</button><button id="copyBtn" class="btn btn-primary" type="button">复制计算结果</button></div>
+          <p class="hint" id="copyStatus" role="status" aria-live="polite" style="margin-top:10px"></p>
+        </div>
+        <div class="bottom"><h3>计算假设</h3><p>折后实收 = 标价 × (1 − 折扣率)。按比例收取的费用全部以折后实收为基数。净利润 = 折后实收 − 固定成本 − 比例费用 − 售后损耗预留。保本和目标售价是理论值，不含税费、退货运费、平台最低收费、阶梯费率等特殊情形。</p></div>
+      </section>
+      <aside class="panel results" aria-label="计算结果">
+        <div class="top"><div class="sub">预计每单净利润</div><div id="profit" class="value-main positive" aria-live="polite">¥0.00</div><span class="status" id="profitStatus">计算中</span></div>
+        <div class="rest">
+          <p id="error" class="error" hidden role="alert"></p>
+          <div class="metrics">
+            <div class="metric"><div class="metric-name">折后实收</div><div class="metric-value" id="paid">¥0.00</div></div>
+            <div class="metric"><div class="metric-name">净利率（按实收）</div><div class="metric-value" id="margin">—</div></div>
+            <div class="metric"><div class="metric-name">保本最低标价</div><div class="metric-value" id="breakEven">¥0.00</div><div class="caption">维持当前折扣和费率</div></div>
+            <div class="metric"><div class="metric-name">达到目标利润的标价</div><div class="metric-value" id="targetPrice">¥0.00</div><div class="caption">维持当前折扣和费率</div></div>
+          </div>
+          <div class="breakdown"><h3>单笔收支明细</h3><table><tbody><tr><td>折后实收</td><td id="rPaid">¥0.00</td></tr><tr><td>固定成本合计</td><td id="rFixed">¥0.00</td></tr><tr><td>平台、支付及损耗预留</td><td id="rVariable">¥0.00</td></tr><tr><td>预计净利润</td><td id="rProfit">¥0.00</td></tr></tbody></table></div>
+          <div class="note">提示：平台收费标准可能随类目、活动、商家资质变化。请使用后台实际费率核对。此工具提供测算，不构成经营收益保证。</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <footer class="wrap">© 简效工具实验室 · 免费版 v1.0 · 本页为 AI 辅助开发并经过功能测试的静态工具，所有运算在浏览器本地完成。<a href="https://afdian.com/a/jianxiaogongju" target="_blank" rel="noopener noreferrer">爱发电主页</a> · <a href="https://github.com/fen-1913/jianxiao-profit-calculator" target="_blank" rel="noopener noreferrer">GitHub 源码</a> · 欢迎反馈。</footer>
+  <script>
+  (() => {
+    'use strict';
+    const defaults = { price: 39.9, discount: 10, productCost: 12, shipping: 4, packaging: .8, otherCost: 2, platformRate: 5, paymentRate: .6, riskRate: 2, targetProfit: 10 };
+    const keys = Object.keys(defaults);
+    const byId = id => document.getElementById(id);
+    const money = n => Number.isFinite(n) ? (n < 0 ? '−¥' + Math.abs(n).toFixed(2) : '¥' + n.toFixed(2)) : '—';
+    const percent = n => Number.isFinite(n) ? n.toFixed(1) + '%' : '—';
+    const values = () => Object.fromEntries(keys.map(k => [k, Number(byId(k).value)]));
+    let last = null;
+    function compute() {
+      const v = values();
+      const issues = [];
+      keys.forEach(k => {
+        const input = byId(k);
+        const raw = input.value.trim();
+        const n = v[k];
+        const bad = raw === '' || !Number.isFinite(n) || n < 0 || n > 100000000;
+        input.setAttribute('aria-invalid', String(bad));
+        if (bad) issues.push('请输入有效的非负数值：' + input.closest('label').querySelector('.field-label').textContent);
+      });
+      if (v.discount >= 100) issues.push('促销折扣必须低于 100%。');
+      for (const k of ['platformRate','paymentRate','riskRate']) if (v[k] > 100) issues.push('费率不能超过 100%。');
+      if (issues.length === 0 && v.platformRate + v.paymentRate + v.riskRate >= 100) issues.push('平台费、支付费和损耗预留的合计费率需要低于 100%。');
+      const error = byId('error');
+      error.hidden = issues.length === 0;
+      error.textContent = issues.join(' ');
+      const set = (id, text) => byId(id).textContent = text;
+      if (issues.length) {
+        ['profit','paid','breakEven','targetPrice','rPaid','rFixed','rVariable','rProfit'].forEach(k => set(k,'—'));
+        set('margin','—'); set('profitStatus','请检查输入');
+        byId('profit').className = 'value-main';
+        last = null;
+        return;
+      }
+      const paid = v.price * (1-v.discount/100);
+      const fixed = v.productCost+v.shipping+v.packaging+v.otherCost;
+      const rate = (v.platformRate + v.paymentRate + v.riskRate)/100;
+      const variable = paid*rate;
+      const profit = paid-fixed-variable;
+      const margin = paid > 0 ? profit/paid*100 : NaN;
+      const multiplier = (1-v.discount/100)*(1-rate);
+      const breakeven = fixed/multiplier;
+      const targetPrice = (fixed+v.targetProfit)/multiplier;
+      last = {v,paid,fixed,variable,profit,margin,breakeven,targetPrice};
+      set('profit',money(profit)); set('paid',money(paid)); set('margin',percent(margin));
+      set('breakEven',money(breakeven)); set('targetPrice',money(targetPrice));
+      set('rPaid',money(paid)); set('rFixed',money(fixed)); set('rVariable',money(variable)); set('rProfit',money(profit));
+      set('profitStatus',profit > 0.005 ? '预计盈利' : profit < -0.005 ? '预计亏损' : '基本保本');
+      byId('profit').className = 'value-main ' + (profit >= 0 ? 'positive':'negative');
+    }
+    keys.forEach(k=>byId(k).addEventListener('input',compute));
+    const fill = o => { keys.forEach(k=>byId(k).value=o[k]); byId('copyStatus').textContent=''; compute(); };
+    byId('exampleBtn').addEventListener('click',()=>fill(defaults));
+    byId('clearBtn').addEventListener('click',()=>fill(Object.fromEntries(keys.map(k=>[k,0]))));
+    byId('copyBtn').addEventListener('click',async()=>{
+      if (!last) {byId('copyStatus').textContent='请先修正输入内容。';return;}
+      const {paid,fixed,variable,profit,margin,breakeven,targetPrice,v}=last;
+      const output=`简效工具实验室 · 单笔利润测算\n标价：${money(v.price)}；折扣：${v.discount}%\n折后实收：${money(paid)}\n固定成本：${money(fixed)}\n比例费用及损耗预留：${money(variable)}\n预计净利润：${money(profit)}\n按实收净利率：${percent(margin)}\n保本最低标价：${money(breakeven)}\n目标利润 ${money(v.targetProfit)} 的标价：${money(targetPrice)}\n以上为估算，请以实际平台收费规则为准。`;
+      try {
+        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(output);
+        else { const t=document.createElement('textarea');t.value=output;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();if(!document.execCommand('copy')) throw new Error('copy failed');t.remove(); }
+        byId('copyStatus').textContent='已复制计算结果。';
+      } catch (_) { byId('copyStatus').textContent='自动复制失败，请使用支持复制功能的现代浏览器。'; }
+    });
+    compute();
+  })();
+  </script>
+</body>
+</html>
